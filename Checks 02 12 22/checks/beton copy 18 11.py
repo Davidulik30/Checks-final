@@ -1,0 +1,245 @@
+from tabnanny import check
+import pandas as pd
+import numpy as np
+from sklearn import datasets
+from sklearn.cluster import KMeans
+from sklearn import preprocessing
+#from sympy import content
+from tqdm import tqdm_notebook
+from scipy.cluster.hierarchy import linkage, dendrogram
+import time
+from flask import Flask, request
+import json
+from main import delete_check, get_check, insert_check, read_content
+
+num_clusters = 6
+train_count = 10000
+plotted_point_count = 500
+
+def timing(f):
+    def wrap(*args):
+        time1 = time.time()
+        ret = f(*args)
+        time2 = time.time()
+        print('{:s} function took {:.3f} ms'.format(f.__name__, (time2-time1)*1000.0))
+        return ret
+    return wrap
+
+#Функция обновления данных 
+
+def checks_update():
+    train_count = 10000
+    dfStr = pd.DataFrame(read_content()) #Считать из БД чеки
+    #dfStr = pd.read_csv('C:/Users/begku/Desktop/MenosyanTZ/FINAL2807/Checks 28/checks/checks_str.txt', sep='\t') # Считать из фаила txt
+    dfTitles = pd.read_csv('C:/Users/begku/Desktop/Menosyan TZ/FINAL2807/Checks 28/checks/checks_titles.txt', sep='\t') #Перенести в бд
+    names = pd.read_csv('C:/Users/begku/Desktop/Menosyan TZ/FINAL2807/Checks 28/checks/id.txt', sep='\t', names=['idtov','name']) #Перенести в бд
+    data = pd.merge(dfStr, names, on='idtov')
+    print (dfStr)
+    data = pd.merge(dfTitles, data, on='iddoc' )
+    data.head()
+
+    #number_of_units_sold -  количество проданных единиц 
+    tovs = data.groupby(['idtov']).sum() #общее кол-во товаров по id товара
+    tovs['number_of_units_sold'] = data.groupby(['idtov']).size()
+    tovs = tovs.sort_values(by = ['summa'], ascending=False)
+    tovs.head()
+
+    ch = data.groupby(['iddoc']).sum()
+    ch['count_uniq_good'] = data.groupby(['iddoc']).size()
+
+    checks = ch.drop(columns=["return","kassa","price"])
+    checks = checks[checks['count_uniq_good'] > 2]
+    checks = checks[checks['summa'] > 0]
+    checks.head()
+
+   #нормализация данных
+    checks = pd.DataFrame(preprocessing.normalize(checks, axis=0), index = checks.index.values)
+    checks.columns=["kolvo","summa","count_uniq_good"]
+    print(checks.loc[checks.index=="240T4"]) #227G1
+    checks.head(10)
+    trainDF = pd.DataFrame(checks[:train_count])
+    train = trainDF.values
+
+    #описываем модель
+    num_clusters = 6
+    model = KMeans(n_clusters = num_clusters)
+
+    #проводим моделирование
+    time1 = time.time()
+    model.fit(train)
+    time2 = time.time()
+    print((time2-time1)*1000.0)
+
+    #предсказания
+    all_predictions = model.predict(train)
+
+    #сгенерировать матрицу связей
+
+    #проводим моделирование
+    time1 = time.time()
+    mergings = linkage(train, method='ward')
+    time2 = time.time()
+    print((time2-time1)*1000.0)
+
+
+    dendrogram(mergings,
+            truncate_mode='lastp',
+            show_leaf_counts=False,
+            leaf_rotation=90,
+            leaf_font_size=12,
+            show_contracted=True,)
+    
+    from sklearn.cluster import DBSCAN
+    from sklearn.decomposition import PCA
+
+    # Определяем модель
+    dbscan = DBSCAN(eps=0.0005, min_samples=100)
+    
+    # Обучаем
+    time1 = time.time()
+    dbscan.fit(trainDF)
+    time2 = time.time()
+    print((time2-time1)*1000.0)
+    all_predictions = dbscan.labels_
+
+    # a = sorted(dbscan.labels_)
+    # for i in range(0, len(a)):
+    #     print(a[i])
+
+    dfrm = pd.Series({'predicted':all_predictions})
+    trainDF['predicted'] = dfrm['predicted']
+    trainDF.head(15)
+    print ("mark 112 data.loc index>>>>>>>>>>>>>>:")
+    print(checks.loc[checks.index=='228EQ'])
+    print ("mark 114 data.loc index end<<<<<<<<<<<<<<<:")
+    return checks,trainDF,data,model,names
+
+def get_rec(check_id):
+    num_clusters = 6
+    checks,trainDF,data,model,names = checks_update()
+    #testCheck = pd.DataFrame(checks.loc[checks.index==check_id])
+    summ = pd.DataFrame()
+    testCheck = checks.loc[checks.index==check_id]
+    #testCheck = pd.DataFrame(checks[train_count+9:train_count+10])
+    #pred = model.predict(testCheck.values)
+    #print(check_id)
+    # print(pred)
+    # print("testCheck:")
+    # print(pd.DataFrame(checks[train_count+8:train_count+9]))
+    # print("check ended")
+    # print(pd.DataFrame(checks.loc[checks.index==check_id]))
+    # print(checks.loc[checks.index==check_id])
+    # print("checks.index")
+    # print(testCheck)
+    # print("testCheck end")
+    
+    test_check_content = pd.DataFrame(data[data['iddoc'].isin(testCheck.index.values)])
+    
+    test_check_content.head()
+    
+    group = trainDF[trainDF['predicted']==1]
+    group.shape
+
+    c = []
+    for i in range(num_clusters):
+        group = trainDF[trainDF['predicted']==i]
+        c.append(group.mean().values[:-1])
+    # print(c)
+
+    col = ['r','g','b','m', 'y', 'c']
+    a = []
+    
+    print("mark:testCheck.shape")
+    print(testCheck.shape)
+    
+    for index, t in testCheck.iterrows():
+        closest = model.predict(np.array([t.values]))
+        similar_checks = pd.DataFrame(trainDF[trainDF['predicted']==closest[0]])
+        check_content = pd.DataFrame(data[data["iddoc"]==index])
+        print(check_content)
+        #получить все товары из похожих чеков
+        train_tov = pd.DataFrame(data[data['iddoc'].isin(similar_checks.index.values)])
+
+        
+        for check_inedx, tovar in check_content.iterrows():
+            #отбираем все те чеки в которых встречаются эти товары
+            a.append(train_tov[train_tov['idtov'] == tovar['idtov']]) #Заменить check_content на список товаров из запроса
+            
+        a = pd.concat(a)
+        a = pd.DataFrame(a.groupby(['iddoc']).size().reset_index(name='count'))
+        a = a.sort_values(by=['count', 'iddoc'], ascending=False)
+        
+        b = []
+        for ind, k in a.iterrows():
+            t = pd.DataFrame(data[data["iddoc"]==a.iloc[ind]['iddoc']])
+            b.extend(t.values)
+            
+        b = pd.DataFrame(b, columns = data.columns)
+        summ = b.groupby(['idtov']).sum()
+        summ['count_good'] = b.groupby(['idtov']).size()
+        summ = summ.sort_values(by = ['count_good'], ascending=False)
+    
+    print ("mark 182 summ:")
+    print (summ)
+    
+    summ = pd.merge(summ, names, on='idtov')
+    summ.head()
+
+    for index, tov in check_content.iterrows():
+        summ = summ[summ.idtov != tov.idtov]
+    summ = summ.sort_values(by = ['count_good'], ascending=False)
+    print("WORKES")
+    return summ.to_json(orient="split"), 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+#print(get_rec("228EQ"))#240T3
+print("Start server:")
+
+app = Flask(__name__)
+print(__name__)
+
+@app.route('/get_recomendation',methods=['POST'])
+def show_rec_check():
+    content = request.get_json()
+
+    iddoc_example=None
+    for iddoc in content:
+        iddoc_example=iddoc['iddoc']
+    print ("mark:")
+    print (iddoc_example)
+    print (type(iddoc_example))
+    print (type("228EQ"))
+    return get_rec(iddoc_example)
+
+# @app.route('/get_recomendation/<check>',methods=['GET'])
+# def show_rec_checkonly(check):
+#      return get_rec(checks,check,trainDF)
+
+# @app.route('/get_recomendation',methods=['GET'])
+# def show_rec_check():
+#     content = request.get_json()
+#     tovCount = content["tov_count"]
+#     return summ.head(tovCount).to_json(), 404, {'Content-Type': 'application/json; charset=utf-8'}
+
+@app.route('/get_check/<check>',methods=['GET'])
+def show_check(check):
+    return get_check(check)
+    #return json.dumps(get_check(check)), 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+@app.route('/add_check',methods=['POST'])
+def post_check():
+    content = request.get_json()
+    #insert_check(content)
+    return insert_check(content)
+
+@app.route('/delete_check/<check>',methods=['DELETE'])
+def delete_checks(check):
+    delete_check(check)
+    return "Check deleted!"
+
+@app.route('/update_db',methods=['POST'])
+def update_db():
+    checks_update()
+    return 0
+    
+if __name__ == '__main__':
+    app.run()

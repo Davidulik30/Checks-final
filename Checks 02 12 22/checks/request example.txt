@@ -1,0 +1,36 @@
+#get_recomendation
+
+#localhost:5000/get_recomendation #---------------------- POST
+
+#raw json
+
+{ 
+    "rec_count": 5,  #count of recomendations for output/количество рекомендаций для вывода
+    "tov_content": [ 		#содержимое корзины/чека
+        { 
+            "iddoc": "TestCheck", 
+            "idtov": "7P9", 
+            "count": 1 
+        }, 
+        { 
+            "iddoc": "TestCheck", 
+            "idtov": "10H", 
+            "count": 1 
+        }, 
+        { 
+            "iddoc": "TestCheck", 
+            "idtov": "ISQ", 
+            "count": 1 
+        }, 
+        { 
+            "iddoc": "TestCheck", 
+            "idtov": "X5", 
+            "count": 2 
+        }, 
+        { 
+            "iddoc": "TestCheck", 
+            "idtov": "9O0", 
+            "count": 2 
+        } 
+    ] 
+}

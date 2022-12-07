@@ -245,4 +245,4 @@ def update_db():
     return 0
     
 if __name__ == '__main__':
-    app.run(port=228)
+    app.run(port=5555)

@@ -10,7 +10,7 @@ import json
 def set_connection(): #установка соединения
     connection = pymysql.connect(
         host=host, #Указано в конфиге
-        port=8080, #Выставить порт БД
+        port=3306, #Выставить порт БД
         user=user, 
         password=password,
         database=db_name,

@@ -123,3 +123,38 @@ def get_tov_price(tov): #получить цену товара
             connection.close()
     #data=json.dumps(cursor.fetchall()), 200, {'Content-Type': 'application/json; charset=utf-8'}
     return cursor.fetchall()
+
+def  auth_check(auth_data):
+    connection=set_connection()
+    try:
+        with connection.cursor() as cursor:
+            insert_query ="Select id,rec_count from users_db where EXISTS login = (%s) AND password = (%s)"
+            cursor.execute(insert_query,auth_data["login"],auth_data["pass"])
+            connection.commit()
+    finally:
+            connection.close()
+    userid=cursor.fetchall
+    if(userid["id"]!=0):
+        return token_create(userid["id"])
+
+def  token_check(token):
+    connection=set_connection()
+    try:
+        with connection.cursor() as cursor:
+            insert_query ="Select token from token_db where EXISTS token = (%s)"
+            cursor.execute(insert_query,token)
+            connection.commit()
+    finally:
+            connection.close()
+    return cursor.fetchall()
+
+def  token_create(userid):
+    connection=set_connection()
+    try:
+        with connection.cursor() as cursor:
+            insert_query = "INSERT INTO `token_db` userid,token VALUES (%s,%s)"
+            cursor.execute(insert_query,userid,"1G1")
+            connection.commit()
+    finally:
+            connection.close()
+    return "1G1"

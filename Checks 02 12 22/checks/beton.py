@@ -12,7 +12,7 @@ import time
 from flask import Flask, request
 import json
 import positions
-from main import delete_check, get_check, insert_check, read_content,get_tov_price
+from main import delete_check, get_check, insert_check, read_content,get_tov_price,token_check,auth_check
 
 num_clusters = 6
 train_count = 10000
@@ -203,25 +203,30 @@ print("Start server:")
 app = Flask(__name__)
 print(__name__)
 
+@app.route('/auth',methods=['POST'])
+def authorization_check():
+    content = request.get_json()
+    return auth_check(content)
+
+
 @app.route('/get_recomendation',methods=['POST'])
 def show_rec_check():
-    delete_check("TestCheck")
-    content = request.get_json()
-
-    
-    iddoc_example=None
-    for iddoc in content["tov_content"]:
-        iddoc["price"] = get_tov_price(iddoc["idtov"])[0]["MAX(price)"]
-        iddoc["summa"] = iddoc["price"]*iddoc["count"]
-        iddoc_example=iddoc["iddoc"]
-        print(iddoc_example)
-    if iddoc_example=="TestCheck":
-        insert_check(content["tov_content"])
-        print ("mark:")
-        print (type("TestCheck"))
-        return get_rec("TestCheck",content["rec_count"])
-    else: 
-        return "none"
+    if(token_check(content["token"])):
+        delete_check("TestCheck")
+        content = request.get_json()
+        iddoc_example=None
+        for iddoc in content["tov_content"]:
+            iddoc["price"] = get_tov_price(iddoc["idtov"])[0]["MAX(price)"]
+            iddoc["summa"] = iddoc["price"]*iddoc["count"]
+            iddoc_example=iddoc["iddoc"]
+            print(iddoc_example)
+        if iddoc_example=="TestCheck":
+            insert_check(content["tov_content"])
+            print ("mark:")
+            print (type("TestCheck"))
+            return get_rec("TestCheck",content["rec_count"])
+        else: 
+            return "none"
 
 @app.route('/get_check/<check>',methods=['GET'])
 def show_check(check):

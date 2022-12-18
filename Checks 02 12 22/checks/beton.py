@@ -211,9 +211,9 @@ def authorization_check():
 
 @app.route('/get_recomendation',methods=['POST'])
 def show_rec_check():
+    content = request.get_json()
     if(token_check(content["token"])):
         delete_check("TestCheck")
-        content = request.get_json()
         iddoc_example=None
         for iddoc in content["tov_content"]:
             iddoc["price"] = get_tov_price(iddoc["idtov"])[0]["MAX(price)"]
@@ -227,6 +227,8 @@ def show_rec_check():
             return get_rec("TestCheck",content["rec_count"])
         else: 
             return "none"
+    else:
+        return "not valid request"
 
 @app.route('/get_check/<check>',methods=['GET'])
 def show_check(check):
@@ -250,4 +252,4 @@ def update_db():
     return 0
     
 if __name__ == '__main__':
-    app.run(host='162.55.190.16',port=53)
+    app.run()#host='162.55.190.16',port=53

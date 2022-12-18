@@ -10,7 +10,7 @@ import json
 def set_connection(): #установка соединения
     connection = pymysql.connect(
         host=host, #Указано в конфиге
-        port=3306, #Выставить порт БД
+        port=8080, #Выставить порт БД 3306
         user=user, 
         password=password,
         database=db_name,
@@ -125,23 +125,24 @@ def get_tov_price(tov): #получить цену товара
     return cursor.fetchall()
 
 def  auth_check(auth_data):
+    
     connection=set_connection()
     try:
         with connection.cursor() as cursor:
-            insert_query ="Select id,rec_count from users_db where EXISTS login = (%s) AND password = (%s)"
-            cursor.execute(insert_query,auth_data["login"],auth_data["pass"])
+            insert_query ="SELECT id from users_db where login = %s AND password = %s"
+            cursor.execute(insert_query,(auth_data[0]["login"],auth_data[0]["pass"]))
             connection.commit()
     finally:
             connection.close()
     userid=cursor.fetchall
-    if(userid["id"]!=0):
-        return token_create(userid["id"])
+    if(userid!=0):
+        return token_create(userid)
 
 def  token_check(token):
     connection=set_connection()
     try:
         with connection.cursor() as cursor:
-            insert_query ="Select token from token_db where EXISTS token = (%s)"
+            insert_query ="Select EXISTS (SELECT id from token_db where token=%s)"
             cursor.execute(insert_query,token)
             connection.commit()
     finally:
@@ -152,8 +153,8 @@ def  token_create(userid):
     connection=set_connection()
     try:
         with connection.cursor() as cursor:
-            insert_query = "INSERT INTO `token_db` userid,token VALUES (%s,%s)"
-            cursor.execute(insert_query,userid,"1G1")
+            insert_query = "INSERT INTO `token_db` (userid,token) VALUES (%s,%s)"
+            cursor.execute(insert_query,(userid,"1G1"))
             connection.commit()
     finally:
             connection.close()

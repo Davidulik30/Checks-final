@@ -10,7 +10,7 @@ import json
 def set_connection(): #установка соединения
     connection = pymysql.connect(
         host=host, #Указано в конфиге
-        port=8080, #Выставить порт БД 3306
+        port=3306, #Выставить порт БД 3306
         user=user, 
         password=password,
         database=db_name,
@@ -125,29 +125,48 @@ def get_tov_price(tov): #получить цену товара
     return cursor.fetchall()
 
 def  auth_check(auth_data):
-    
     connection=set_connection()
     try:
         with connection.cursor() as cursor:
-            insert_query ="SELECT id from users_db where login = %s AND password = %s"
-            cursor.execute(insert_query,(auth_data[0]["login"],auth_data[0]["pass"]))
+            insert_query ="SELECT id,COUNT(*),count_requests from users_db where login = %s AND password = %s"
+            cursor.execute(insert_query,(auth_data["login"],auth_data["pass"]))
             connection.commit()
     finally:
             connection.close()
-    userid=cursor.fetchall
-    if(userid!=0):
+    user_data=cursor.fetchall()
+    if(user_data[0]["COUNT(*)"]==1):
+        return token_check_by_id(user_data[0]["id"])
+
+def token_check_by_id(userid):
+    connection=set_connection()
+    try:
+        with connection.cursor() as cursor:
+            insert_query ="SELECT token,COUNT(*) from token_db where userid=%s"
+            cursor.execute(insert_query,userid)
+            connection.commit()
+    finally:
+            connection.close()
+    token_data=cursor.fetchall()
+    if(token_data[0]["COUNT(*)"]!=0):
+        return token_data[0]["token"]
+    else:
         return token_create(userid)
 
 def  token_check(token):
     connection=set_connection()
     try:
         with connection.cursor() as cursor:
-            insert_query ="Select EXISTS (SELECT id from token_db where token=%s)"
+            insert_query ="SELECT token,COUNT(*) from token_db where token=%s"
             cursor.execute(insert_query,token)
             connection.commit()
     finally:
             connection.close()
-    return cursor.fetchall()
+    token_data=cursor.fetchall()
+    print(token_data[0]["token"])
+    if(token_data[0]["COUNT(*)"]!=0):
+        return token_data[0]["COUNT(*)"]
+    else:
+        return false
 
 def  token_create(userid):
     connection=set_connection()

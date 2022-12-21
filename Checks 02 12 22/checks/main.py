@@ -6,6 +6,7 @@ from sklearn import preprocessing
 from sympy import false, true
 from config import host,user,password,db_name
 import json
+import secrets
 
 def set_connection(): #установка соединения
     connection = pymysql.connect(
@@ -167,6 +168,8 @@ def  token_check(token):
         return token_data[0]["COUNT(*)"]
     else:
         return false
+def token_generating():
+    return secrets.token_hex(16)
 
 def  token_create(userid):
     connection=set_connection()
@@ -177,4 +180,4 @@ def  token_create(userid):
             connection.commit()
     finally:
             connection.close()
-    return "1G1"
+    return token_generating

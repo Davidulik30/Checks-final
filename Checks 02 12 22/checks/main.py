@@ -168,16 +168,18 @@ def  token_check(token):
         return token_data[0]["COUNT(*)"]
     else:
         return false
+
 def token_generating():
     return secrets.token_hex(16)
 
 def  token_create(userid):
     connection=set_connection()
+    token=token_generating()
     try:
         with connection.cursor() as cursor:
             insert_query = "INSERT INTO `token_db` (userid,token) VALUES (%s,%s)"
-            cursor.execute(insert_query,(userid,"1G1"))
+            cursor.execute(insert_query,(userid,token))
             connection.commit()
     finally:
             connection.close()
-    return token_generating
+    return token

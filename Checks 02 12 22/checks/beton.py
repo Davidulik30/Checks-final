@@ -212,7 +212,6 @@ def authorization_check():
 @app.route('/get_recomendation',methods=['POST'])
 def show_rec_check():
     content = request.get_json()
-    print(token_check(content["token"]))
     if(token_check(content["token"])):
         delete_check("TestCheck")
         iddoc_example=None

@@ -33,8 +33,8 @@ def checks_update():
     train_count = 10000
     dfStr = pd.DataFrame(read_content()) #Считать из БД чеки
     #dfStr = pd.read_csv('./checks_str.txt', sep='\t') # Считать из фаила txt
-    dfTitles = pd.read_csv('C:/Users/Admin/Documents/GitHub/Checks-final/Checks 02 12 22/checks/checks_titles.txt', sep='\t') #Перенести в бд
-    names = pd.read_csv('C:/Users/Admin/Documents/GitHub/Checks-final/Checks 02 12 22/checks/id.txt', sep='\t', names=['idtov','name']) #Перенести в бд
+    dfTitles = pd.read_csv('./checks_titles.txt', sep='\t') #Перенести в бд
+    names = pd.read_csv('./id.txt', sep='\t', names=['idtov','name']) #Перенести в бд
     data = pd.merge(dfStr, names, on='idtov')
     print (dfStr)
     data = pd.merge(dfTitles, data, on='iddoc' )
@@ -252,4 +252,4 @@ def update_db():
     return 0
     
 if __name__ == '__main__':
-    app.run()#host='162.55.190.16',port=53
+    app.run(host='162.55.190.16',port=53)

@@ -135,7 +135,7 @@ def  auth_check(auth_data):
     finally:
             connection.close()
     user_data=cursor.fetchall()
-    if(user_data[0]!=None):
+    if(len(user_data)!=0):
         return token_check_by_id(user_data[0]["id"])
 
 def token_check_by_id(userid):

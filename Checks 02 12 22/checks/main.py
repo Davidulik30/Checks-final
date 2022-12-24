@@ -129,13 +129,13 @@ def  auth_check(auth_data):
     connection=set_connection()
     try:
         with connection.cursor() as cursor:
-            insert_query ="SELECT id,COUNT(*),count_requests from users_db where login = %s AND password = %s"
+            insert_query =" SELECT id FROM users_db WHERE EXISTS(SELECT * FROM users_db where login= %s AND password = %s);"
             cursor.execute(insert_query,(auth_data["login"],auth_data["pass"]))
             connection.commit()
     finally:
             connection.close()
     user_data=cursor.fetchall()
-    if(user_data[0]["COUNT(*)"]==1):
+    if(user_data[0]==None):
         return token_check_by_id(user_data[0]["id"])
 
 def token_check_by_id(userid):

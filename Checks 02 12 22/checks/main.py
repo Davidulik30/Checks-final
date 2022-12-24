@@ -170,7 +170,7 @@ def  token_check(token):
         return false
 
 def token_generating():
-    return secrets.token_hex(16)
+    return secrets.token_hex(10)
 
 def  token_create(userid):
     connection=set_connection()

@@ -135,20 +135,20 @@ def  auth_check(auth_data):
     finally:
             connection.close()
     user_data=cursor.fetchall()
-    if(user_data[0]==None):
+    if(user_data[0]!=None):
         return token_check_by_id(user_data[0]["id"])
 
 def token_check_by_id(userid):
     connection=set_connection()
     try:
         with connection.cursor() as cursor:
-            insert_query ="SELECT token,COUNT(*) from token_db where userid=%s"
+            insert_query ="SELECT token from token_db WHERE EXISTS(SELECT * FROM token_db where userid=%s);"
             cursor.execute(insert_query,userid)
             connection.commit()
     finally:
             connection.close()
     token_data=cursor.fetchall()
-    if(token_data[0]["COUNT(*)"]!=0):
+    if(token_data[0]!=None):
         return token_data[0]["token"]
     else:
         return token_create(userid)
@@ -157,15 +157,15 @@ def  token_check(token):
     connection=set_connection()
     try:
         with connection.cursor() as cursor:
-            insert_query ="SELECT token,COUNT(*) from token_db where token=%s"
+            insert_query ="SELECT token from token_db WHERE EXISTS(SELECT * FROM token_db where token=%s);"
             cursor.execute(insert_query,token)
             connection.commit()
     finally:
             connection.close()
     token_data=cursor.fetchall()
     print(token_data[0]["token"])
-    if(token_data[0]["COUNT(*)"]!=0):
-        return token_data[0]["COUNT(*)"]
+    if(token_data[0]["token"]==token):
+        return true
     else:
         return false
 

@@ -148,7 +148,7 @@ def token_check_by_id(userid):
     finally:
             connection.close()
     token_data=cursor.fetchall()
-    if(token_data[0]!=None):
+    if(len(token_data)!=0):
         return token_data[0]["token"]
     else:
         return token_create(userid)

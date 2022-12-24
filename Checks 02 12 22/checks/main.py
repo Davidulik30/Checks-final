@@ -138,7 +138,7 @@ def  auth_check(auth_data):
     if(len(user_data)!=0):
         return token_check_by_id(user_data[0]["id"])
     else:
-        return false
+        return "not valid login or password"
 
 
 def token_check_by_id(userid):

@@ -166,11 +166,12 @@ def  token_check(token):
     finally:
             connection.close()
     token_data=cursor.fetchall()
-    print(token_data[0]["token"])
-    if(token_data[0]["token"]==token):
-        return true
-    else:
-        return false
+    if(len(token_data)!=0):
+        if(token_data[0]["token"]==token):
+            print(token_data[0]["token"])
+            return true
+        else:
+            return false
 
 def token_generating():
     return secrets.token_hex(10)

@@ -11,7 +11,6 @@ from scipy.cluster.hierarchy import linkage, dendrogram
 import time
 from flask import Flask, request
 import json
-import positions
 from main import delete_check, get_check, insert_check, read_content,get_tov_price,token_check,auth_check
 
 num_clusters = 6
@@ -28,13 +27,12 @@ def timing(f):
     return wrap
 
 #Функция обновления данных 
-
 def checks_update():
     train_count = 10000
     dfStr = pd.DataFrame(read_content()) #Считать из БД чеки
     #dfStr = pd.read_csv('./checks_str.txt', sep='\t') # Считать из фаила txt
-    dfTitles = pd.read_csv('./checks_titles.txt', sep='\t') #Перенести в бд
-    names = pd.read_csv('./id.txt', sep='\t', names=['idtov','name']) #Перенести в бд
+    dfTitles = pd.read_csv('C:/Users/begku/Desktop/Menosyan TZ/Checks-final/Checks 02 12 22/checks/checks_titles.txt', sep='\t') #Перенести в бд
+    names = pd.read_csv('C:/Users/begku/Desktop/Menosyan TZ/Checks-final/Checks 02 12 22/checks/id.txt', sep='\t', names=['idtov','name']) #Перенести в бд
     data = pd.merge(dfStr, names, on='idtov')
     print (dfStr)
     data = pd.merge(dfTitles, data, on='iddoc' )
@@ -116,10 +114,11 @@ def checks_update():
     print ("mark 114 data.loc index end<<<<<<<<<<<<<<<:")
     return checks,trainDF,data,model,names
 
+checks,trainDF,data,model,names = checks_update()
 #Функция получения рекомендаций
-def get_rec(check,rec_count):
+def get_rec(check,rec_count,checks,trainDF,data,model,names):
     num_clusters = 6
-    checks,trainDF,data,model,names = checks_update()
+    
     #testCheck = pd.DataFrame(checks.loc[checks.index==check_id])
     summ = pd.DataFrame()
     testCheck = checks.loc[checks.index==check]
@@ -212,7 +211,9 @@ def authorization_check():
 @app.route('/get_recomendation',methods=['POST'])
 def show_rec_check():
     content = request.get_json()
-    if(token_check(content["token"])):
+    token = request.headers["token"]
+    print(token)
+    if(token_check(token)):
         delete_check("TestCheck")
         iddoc_example=None
         for iddoc in content["tov_content"]:
@@ -224,7 +225,7 @@ def show_rec_check():
             insert_check(content["tov_content"])
             print ("mark:")
             print (type("TestCheck"))
-            return get_rec("TestCheck",content["rec_count"])
+            return get_rec("TestCheck",content["rec_count"],checks,trainDF,data,model,names)
         else: 
             return "none"
     else:
@@ -252,4 +253,4 @@ def update_db():
     return 0
     
 if __name__ == '__main__':
-    app.run(host='162.55.190.16',port=53)
+    app.run()

@@ -17,6 +17,12 @@ num_clusters = 6
 train_count = 10000
 plotted_point_count = 500
 
+checks=pd.DataFrame()
+trainDF=pd.DataFrame()
+data=pd.DataFrame()
+model=KMeans()
+names=pd.DataFrame()
+
 def timing(f):
     def wrap(*args):
         time1 = time.time()
@@ -28,6 +34,7 @@ def timing(f):
 
 #Функция обновления данных 
 def checks_update():
+    global checks,trainDF,data,model,names
     train_count = 10000
     dfStr = pd.DataFrame(read_content()) #Считать из БД чеки
     #dfStr = pd.read_csv('./checks_str.txt', sep='\t') # Считать из фаила txt
@@ -114,11 +121,12 @@ def checks_update():
     print ("mark 114 data.loc index end<<<<<<<<<<<<<<<:")
     return checks,trainDF,data,model,names
 
-checks,trainDF,data,model,names = checks_update()
+#checks,trainDF,data,model,names = 
+checks_update()
 #Функция получения рекомендаций
-def get_rec(check,rec_count,checks,trainDF,data,model,names):
+def get_rec(check,rec_count):
+    global checks,trainDF,data,model,names
     num_clusters = 6
-    
     #testCheck = pd.DataFrame(checks.loc[checks.index==check_id])
     summ = pd.DataFrame()
     testCheck = checks.loc[checks.index==check]
@@ -225,7 +233,7 @@ def show_rec_check():
             insert_check(content["tov_content"])
             print ("mark:")
             print (type("TestCheck"))
-            return get_rec("TestCheck",content["rec_count"],checks,trainDF,data,model,names)
+            return get_rec("TestCheck",content["rec_count"])
         else: 
             return "none"
     else:

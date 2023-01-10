@@ -5,7 +5,7 @@ df = pd.read_csv('C:/Users/begku/Desktop/sell Data/2020-21.csv',sep=';', encodin
 df=df.rename(columns={'Номенклатура': "name", 'Код':"idtov",
        'Документ продажи.Номер':"iddoc", 'Количество':"count",'Цена':"price",'Сумма':"summa"})
 
-print(df.head(5))
+data['return'] = ''
 
 print(df.keys())
 

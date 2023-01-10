@@ -38,12 +38,22 @@ def checks_update():
     train_count = 10000
     dfStr = pd.DataFrame(read_content()) #Считать из БД чеки
     #dfStr = pd.read_csv('./checks_str.txt', sep='\t') # Считать из фаила txt
-    dfTitles = pd.read_csv('C:/Users/begku/Desktop/Menosyan TZ/Checks-final/Checks 02 12 22/checks/checks_titles.txt', sep='\t') #Перенести в бд
-    names = pd.read_csv('C:/Users/begku/Desktop/Menosyan TZ/Checks-final/Checks 02 12 22/checks/id.txt', sep='\t', names=['idtov','name']) #Перенести в бд
+    dfTitles = pd.read_csv('C:/Users/Admin/Documents/GitHub/Checks-final/Checks 02 12 22/checks/checks_titles.txt', sep='\t') #Перенести в бд
+    names = pd.read_csv('C:/Users/Admin/Documents/GitHub/Checks-final/Checks 02 12 22/checks/id.txt', sep='\t', names=['idtov','name']) #Перенести в бд
     data = pd.merge(dfStr, names, on='idtov')
     print (dfStr)
     data = pd.merge(dfTitles, data, on='iddoc' )
     data.head()
+    # TEST >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    dfdf = pd.read_csv('C:/Users/Admin/Desktop/sell Data/2020-21.csv',sep=';', encoding='ANSI') 
+    data=dfdf.rename(columns={'Номенклатура': 'name', 'Код':'idtov',
+        'Документ продажи.Номер':'iddoc', 'Количество':'count','Цена':'price','Сумма':'summa'})
+    data['return'] = ''
+    data['kassa'] = ''
+
+    data['summa'] = data['summa'].replace(' ','', regex=True)
+    data['summa'] = data['summa'].replace(',','.', regex=True).astype(float)
+    # TEST >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     #number_of_units_sold -  количество проданных единиц 
     tovs = data.groupby(['idtov']).sum() #общее кол-во товаров по id товара
@@ -53,8 +63,8 @@ def checks_update():
 
     ch = data.groupby(['iddoc']).sum()
     ch['count_uniq_good'] = data.groupby(['iddoc']).size()
-
-    checks = ch.drop(columns=["return","kassa","price"])
+    
+    checks = ch.drop(columns=['return','kassa','price'])
     checks = checks[checks['count_uniq_good'] > 2]
     checks = checks[checks['summa'] > 0]
     checks.head()

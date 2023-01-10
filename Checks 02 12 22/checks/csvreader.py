@@ -1,12 +1,12 @@
 import pandas as pd
 
-df = pd.read_csv('C:/Users/Admin/Desktop/sell Data/2020-21.csv',sep='|', encoding='ANSI') 
+df = pd.read_csv('C:/Users/begku/Desktop/sell Data/2020-21.csv',sep=';', encoding='ANSI') 
 
-ch = df.drop(columns='Цена')
+df=df.rename(columns={'Номенклатура': "name", 'Код':"idtov",
+       'Документ продажи.Номер':"iddoc", 'Количество':"count",'Цена':"price",'Сумма':"summa"})
 
-for col in ch.columns:
-    print (col)
-    #print(df.to_string())
+print(df.head(5))
 
+print(df.keys())
 
-        
+#print(df["Цена"].to_list())

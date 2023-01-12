@@ -11,8 +11,8 @@ import secrets
 def set_connection(): #установка соединения
     connection = pymysql.connect(
         host=host, #Указано в конфиге
-        port=8080, #Выставить порт БД 3306
-        user=user, 
+        port=3306, #Выставить порт БД 3306
+        user=user,
         password=password,
         database=db_name,
         cursorclass=pymysql.cursors.DictCursor

@@ -36,23 +36,22 @@ def timing(f):
 def checks_update():
     global checks,trainDF,data,model,names
     train_count = 10000
-    dfStr = pd.DataFrame(read_content()) #Считать из БД чеки
-    #dfStr = pd.read_csv('./checks_str.txt', sep='\t') # Считать из фаила txt
-    dfTitles = pd.read_csv('C:/Users/Admin/Documents/GitHub/Checks-final/Checks 02 12 22/checks/checks_titles.txt', sep='\t') #Перенести в бд
-    names = pd.read_csv('C:/Users/Admin/Documents/GitHub/Checks-final/Checks 02 12 22/checks/id.txt', sep='\t', names=['idtov','name']) #Перенести в бд
-    data = pd.merge(dfStr, names, on='idtov')
-    print (dfStr)
-    data = pd.merge(dfTitles, data, on='iddoc' )
-    data.head()
+    #dfStr = pd.DataFrame(read_content()) #Считать из БД чеки
+    # dfStr = pd.read_csv('C:/Users/Admin/Documents/GitHub/Checks-final/Checks 02 12 22/checks/checks_str.txt', sep='\t') # Считать из фаила txt
+    # dfTitles = pd.read_csv('C:/Users/Admin/Documents/GitHub/Checks-final/Checks 02 12 22/checks/checks_titles.txt', sep='\t') #Перенести в бд
+    # names = pd.read_csv('C:/Users/Admin/Documents/GitHub/Checks-final/Checks 02 12 22/checks/id.txt', sep='\t', names=['idtov','name']) #Перенести в бд
+    # data = pd.merge(dfStr, names, on='idtov')
+    # data = pd.merge(dfTitles, data, on='iddoc')
+    # data.head()
     # TEST >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    dfdf = pd.read_csv('C:/Users/Admin/Desktop/sell Data/2020-21.csv',sep=';', encoding='ANSI') 
-    data=dfdf.rename(columns={'Номенклатура': 'name', 'Код':'idtov',
-        'Документ продажи.Номер':'iddoc', 'Количество':'count','Цена':'price','Сумма':'summa'})
-    data['return'] = ''
-    data['kassa'] = ''
-
+    data = pd.read_csv('C:/Users/Admin/Desktop/sell Data/2020-21-edited.csv',sep=';', encoding='ANSI',low_memory=False) 
     data['summa'] = data['summa'].replace(' ','', regex=True)
     data['summa'] = data['summa'].replace(',','.', regex=True).astype(float)
+    data['price'] = data['price'].replace(' ','', regex=True)
+    data['price'] = data['price'].replace(',','.', regex=True).astype(float)
+    data['count'] = data['count'].replace(' ','', regex=True)
+    data['count'] = data['count'].replace(',','.', regex=True).astype(float)
+    names = data[["idtov","name"]]
     # TEST >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     #number_of_units_sold -  количество проданных единиц 
@@ -61,6 +60,8 @@ def checks_update():
     tovs = tovs.sort_values(by = ['summa'], ascending=False)
     tovs.head()
 
+    
+    
     ch = data.groupby(['iddoc']).sum()
     ch['count_uniq_good'] = data.groupby(['iddoc']).size()
     
@@ -68,11 +69,13 @@ def checks_update():
     checks = checks[checks['count_uniq_good'] > 2]
     checks = checks[checks['summa'] > 0]
     checks.head()
-
    #нормализация данных
+    print(data['count'])
     checks = pd.DataFrame(preprocessing.normalize(checks, axis=0), index = checks.index.values)
+    print(checks.keys())
     checks.columns=["kolvo","summa","count_uniq_good"]
-    print(checks.loc[checks.index=="240T4"]) #227G1
+    print(checks.keys())
+    print(checks.loc[checks.index=="РРУТ0000001"]) #227G1 240T4
     checks.head(10)
     trainDF = pd.DataFrame(checks[:train_count])
     train = trainDF.values

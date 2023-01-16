@@ -116,7 +116,7 @@ def get_tov_price(tov): #получить цену товара
     try:
     #cursor=connection.cursor()
         with connection.cursor() as cursor:
-            insert_query ="Select MAX(price) from tov_prices where idtov = (%s)"
+            insert_query ="Select MAX(price) from checks_table where idtov = (%s)"
             cursor.execute(insert_query,tov)
             connection.commit()
             print("Item %s showed!" % tov)

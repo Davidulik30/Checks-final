@@ -1,6 +1,6 @@
 import pandas as pd
 
-data = pd.read_csv('C:/Users/begku/Desktop/sell Data/2020-21-edited.csv',sep=',', encoding='utf-8',low_memory=False) 
+data = pd.read_csv('C:/Users/Admin/Desktop/sell Data/2020-21-edited.csv',sep=';', encoding='ANSI',low_memory=False) 
 
 data['summa'] = data['summa'].replace(' ','', regex=True)
 data['summa'] = data['summa'].replace(',','.', regex=True).astype(float)

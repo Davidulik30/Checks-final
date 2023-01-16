@@ -44,7 +44,7 @@ def checks_update():
     # data = pd.merge(dfTitles, data, on='iddoc')
     # data.head()
     # TEST >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    data = pd.read_csv('C:/Users/begku/Desktop/sell Data/2020-21-edited.csv',sep=',', encoding='utf-8',low_memory=False) 
+    data = pd.read_csv('C:/Users/Admin/Desktop/sell Data/2020-21-edited.csv',sep=';', encoding='ANSI',low_memory=False) 
     data['summa'] = data['summa'].replace(' ','', regex=True)
     data['summa'] = data['summa'].replace(',','.', regex=True).astype(float)
     data['price'] = data['price'].replace(' ','', regex=True)
@@ -200,10 +200,12 @@ def get_rec(check,rec_count):
         summ = b.groupby(['idtov']).sum()
         summ['count_good'] = b.groupby(['idtov']).size()
         summ = summ.sort_values(by = ['count_good'], ascending=False)
+        print(type(summ))
     
-    print ("mark 182 summ:")
-    print (summ)
+    print(data['idtov'])
+    print(names)
     
+
     summ = pd.merge(summ, names, on='idtov')
     summ.head()
 

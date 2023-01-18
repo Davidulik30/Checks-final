@@ -36,41 +36,43 @@ def timing(f):
 def checks_update():
     global checks,trainDF,data,model,names
     train_count = 10000
+    dfStr = pd.DataFrame(read_content()) #Считать из БД чеки
     #dfStr = pd.DataFrame(read_content()) #Считать из БД чеки
-    # dfStr = pd.read_csv('C:/Users/Admin/Documents/GitHub/Checks-final/Checks 02 12 22/checks/checks_str.txt', sep='\t') # Считать из фаила txt
+    #dfStr = pd.read_csv('C:/Users/Admin/Documents/GitHub/Checks-final/Checks 02 12 22/checks/checks_str.txt', sep='\t') # Считать из фаила txt
     # dfTitles = pd.read_csv('C:/Users/Admin/Documents/GitHub/Checks-final/Checks 02 12 22/checks/checks_titles.txt', sep='\t') #Перенести в бд
     # names = pd.read_csv('C:/Users/Admin/Documents/GitHub/Checks-final/Checks 02 12 22/checks/id.txt', sep='\t', names=['idtov','name']) #Перенести в бд
-    # data = pd.merge(dfStr, names, on='idtov')
-    # data = pd.merge(dfTitles, data, on='iddoc')
-    # data.head()
+    #data = pd.merge(dfStr, names, on='idtov')
+    #data = pd.merge(dfTitles, data, on='iddoc')
+    data=dfStr
+    data.head()
     # TEST >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    data = pd.read_csv('C:/Users/Admin/Desktop/sell Data/2020-21-edited.csv',sep=';', encoding='ANSI',low_memory=False) 
-    data['summa'] = data['summa'].replace(' ','', regex=True)
-    data['summa'] = data['summa'].replace(',','.', regex=True).astype(float)
-    data['price'] = data['price'].replace(' ','', regex=True)
-    data['price'] = data['price'].replace(',','.', regex=True).astype(float)
-    data['count'] = data['count'].replace(' ','', regex=True)
-    data['count'] = data['count'].replace(',','.', regex=True).astype(float)
-    names = data[["idtov","name"]]
+    # data = pd.read_csv('C:/Users/Admin/Desktop/sell Data/2020-21-edited.csv',sep=';', encoding='ANSI',low_memory=False) 
+    # data['summa'] = data['summa'].replace(' ','', regex=True)
+    # data['summa'] = data['summa'].replace(',','.', regex=True).astype(float)
+    # data['price'] = data['price'].replace(' ','', regex=True)
+    # data['price'] = data['price'].replace(',','.', regex=True).astype(float)
+    # data['count'] = data['count'].replace(' ','', regex=True)
+    # data['count'] = data['count'].replace(',','.', regex=True).astype(float)
+    names = data[['idtov','name']]
     # TEST >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     #number_of_units_sold -  количество проданных единиц 
     tovs = data.groupby(['idtov']).sum() #общее кол-во товаров по id товара
     tovs['number_of_units_sold'] = data.groupby(['idtov']).size()
     tovs = tovs.sort_values(by = ['summa'], ascending=False)
-    tovs.head()
+    tovs.head(5)
 
-    
-    
+    print(data.columns)
     ch = data.groupby(['iddoc']).sum()
     ch['count_uniq_good'] = data.groupby(['iddoc']).size()
-    
-    checks = ch.drop(columns=['return','kassa','price'])
+    print(ch.columns)
+    #checks = ch.drop(columns=['return','kassa','price']) # Работает только с разделенной бд
+    checks = ch#.drop(['name'],axis=1)
     checks = checks[checks['count_uniq_good'] > 2]
     checks = checks[checks['summa'] > 0]
     checks.head()
    #нормализация данных
-    print(data['count'])
+    
     checks = pd.DataFrame(preprocessing.normalize(checks, axis=0), index = checks.index.values)
     print(checks.keys())
     checks.columns=["kolvo","summa","count_uniq_good"]
@@ -141,8 +143,8 @@ def get_rec(check,rec_count):
     global checks,trainDF,data,model,names
     num_clusters = 6
     #testCheck = pd.DataFrame(checks.loc[checks.index==check_id])
-    summ = pd.DataFrame()
     testCheck = checks.loc[checks.index==check]
+    print("TestCheck")
     #testCheck = pd.DataFrame(checks[train_count+9:train_count+10])
     #pred = model.predict(testCheck.values)
     #print(check_id)
@@ -200,14 +202,11 @@ def get_rec(check,rec_count):
         summ = b.groupby(['idtov']).sum()
         summ['count_good'] = b.groupby(['idtov']).size()
         summ = summ.sort_values(by = ['count_good'], ascending=False)
-        print(type(summ))
+        print(summ)
     
-    print(data['idtov'])
-    print(names)
-    
-
+    print(summ)
     summ = pd.merge(summ, names, on='idtov')
-    summ.head()
+    
 
     for index, tov in check_content.iterrows():
         summ = summ[summ.idtov != tov.idtov]

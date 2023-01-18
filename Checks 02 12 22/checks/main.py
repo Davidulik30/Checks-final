@@ -47,8 +47,8 @@ def insert_check(check): #вставка чека
                 try:
                 #cursor=connection.cursor()
                     with connection.cursor() as cursor:
-                            insert_query = "INSERT INTO `checks_table` (iddoc,idtov,count,price,summa) VALUES (%s,%s,%s,%s,%s)"
-                            cursor.execute(insert_query,( str["iddoc"],str["idtov"],str["count"],str["price"],str["summa"]))
+                            insert_query = "INSERT INTO `checks_table` (iddoc,idtov,count,price,summa,company_id) VALUES (%s,%s,%s,%s,%s,%s)"
+                            cursor.execute(insert_query,( str["iddoc"],str["idtov"],str["count"],str["price"],str["summa"],str["company_id"]))
                             connection.commit()
                             print("Check %s inserted!" % str["iddoc"])
                 finally:        
@@ -78,7 +78,7 @@ def read_content(): #считывание чеков
     try:
     #cursor=connection.cursor()
         with connection.cursor() as cursor:
-            insert_query ="SELECT iddoc,idtov,count,price,summa FROM checks_table"
+            insert_query ="SELECT iddoc,idtov,count,summa,name FROM checks_table WHERE company_id = 'Cosmetics'"
             cursor.execute(insert_query)
             connection.commit()
             print("Data readed!")
@@ -125,6 +125,7 @@ def get_tov_price(tov): #получить цену товара
     #data=json.dumps(cursor.fetchall()), 200, {'Content-Type': 'application/json; charset=utf-8'}
     return cursor.fetchall()
 
+#Авторизация
 def  auth_check(auth_data):
     connection=set_connection()
     try:
